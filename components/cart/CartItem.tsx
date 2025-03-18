@@ -121,6 +121,12 @@ export const CartItem: React.FC<CartItemProps> = ({
             ]}>
               ${discount.discountedPrice.toFixed(2)}
             </Text>
+            <Text style={[
+              styles.totalPrice,
+              { color: colors.text[isDark ? 'dark' : 'light'] },
+            ]}>
+              Total: ${(discount.discountedPrice * quantity).toFixed(2)}
+            </Text>
           </View>
           {/* Quantity controls */}
           <View style={styles.quantityContainer}>
@@ -211,6 +217,9 @@ const styles = StyleSheet.create({
   },
   discountedPrice: {
     ...typography.title3,
+  },
+  totalPrice: {
+    ...typography.caption1,
   },
   // Quantity controls styles
   quantityContainer: {
