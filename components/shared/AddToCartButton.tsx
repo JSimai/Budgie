@@ -1,3 +1,9 @@
+/**
+ * AddToCartButton Component
+ * Provides add to cart functionality with quantity controls
+ * Changes appearance and behavior based on cart state
+ */
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -13,6 +19,14 @@ import { addToCart, updateQuantity } from '@/app/store/slices/cartSlice';
 import { colors, spacing, typography } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 
+/**
+ * Props for AddToCartButton component
+ * @property productId - Unique identifier for the product
+ * @property title - Product name
+ * @property price - Original product price
+ * @property image - Product image URL
+ * @property discount - Discount information including percentage and calculated values
+ */
 interface AddToCartButtonProps {
   productId: number;
   title: string;
@@ -25,6 +39,10 @@ interface AddToCartButtonProps {
   };
 }
 
+/**
+ * Button component for adding products to cart
+ * Transforms into quantity controls once product is in cart
+ */
 export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   productId,
   title,
@@ -44,10 +62,15 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   const quantity = cartItem?.quantity || 0;
   const [isAdded, setIsAdded] = useState(quantity > 0);
 
+  // Update local state when cart quantity changes
   useEffect(() => {
     setIsAdded(quantity > 0);
   }, [quantity]);
 
+  /**
+   * Handle add to cart button press
+   * Either adds item to cart or navigates to cart if already added
+   */
   const handleAddToCart = () => {
     if (isAdded) {
       // Navigate to cart tab if item is already in cart
@@ -65,6 +88,9 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     }
   };
 
+  /**
+   * Increment quantity of item in cart
+   */
   const handleIncrement = () => {
     dispatch(
       updateQuantity({
@@ -74,6 +100,10 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     );
   };
 
+  /**
+   * Decrement quantity of item in cart
+   * Removes item if quantity becomes 0
+   */
   const handleDecrement = () => {
     if (quantity > 0) {
       dispatch(
@@ -87,6 +117,7 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
 
   return (
     <View style={styles.container}>
+      {/* Main add to cart button */}
       <TouchableOpacity
         style={[
           styles.button,
@@ -111,6 +142,7 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
         </View>
       </TouchableOpacity>
 
+      {/* Quantity controls - only shown when item is in cart */}
       {isAdded && (
         <View style={styles.quantityContainer}>
           <TouchableOpacity
@@ -140,17 +172,20 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   );
 };
 
+// Styles for add to cart button and quantity controls
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  // Main button styles
   button: {
     flex: 1,
     padding: spacing.md,
     borderRadius: 8,
     borderWidth: 2,
+    // Platform-specific shadow styles
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -177,6 +212,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginLeft: spacing.sm,
   },
+  // Quantity control styles
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,10 +228,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   decrementButton: {
-    backgroundColor: colors.discount + '20',
+    backgroundColor: colors.discount + '20',  // 20% opacity
   },
   incrementButton: {
-    backgroundColor: colors.success + '20',
+    backgroundColor: colors.success + '20',  // 20% opacity
   },
   quantity: {
     ...typography.body,

@@ -1,3 +1,8 @@
+/**
+ * Root layout component that sets up the app's core providers and initialization
+ * Handles theme setup, font loading, and initial data fetching
+ */
+
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -13,11 +18,16 @@ import { store } from './store';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { fetchProducts } from './store/slices/productsSlice';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// Prevent the splash screen from auto-hiding before asset loading is complete
 SplashScreen.preventAutoHideAsync();
 
+/**
+ * Inner layout component that handles theme, fonts, and data initialization
+ * Separated from RootLayout to allow proper Redux hook usage
+ */
 function RootLayoutContent() {
   const colorScheme = useColorScheme();
+  // Load custom fonts
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -25,17 +35,19 @@ function RootLayoutContent() {
   const dispatch = useAppDispatch();
   const productsStatus = useAppSelector((state) => state.products.status);
 
+  // Hide splash screen once fonts are loaded
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
 
+  // Initialize product data on component mount
   useEffect(() => {
-    // Fetch products on mount and when dispatch changes
     dispatch(fetchProducts());
   }, [dispatch]);
 
+  // Wait for fonts to load before rendering
   if (!loaded) {
     return null;
   }
@@ -52,6 +64,10 @@ function RootLayoutContent() {
   );
 }
 
+/**
+ * Root layout wrapper that provides Redux store to the app
+ * Wraps the content component with necessary providers
+ */
 export default function RootLayout() {
   return (
     <Provider store={store}>

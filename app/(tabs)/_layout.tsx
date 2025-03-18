@@ -1,3 +1,8 @@
+/**
+ * Tab navigation layout component
+ * Handles the bottom tab bar setup and tab-specific configurations
+ */
+
 import { Tabs } from 'expo-router';
 import { useColorScheme, View, Text, Image } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
@@ -6,6 +11,10 @@ import { HapticTab } from '@/components/HapticTab';
 import { useAppSelector } from '@/app/store/hooks';
 import { isAlertFulfilled } from '@/components/wishlist/WishlistItem';
 
+/**
+ * App logo header component
+ * Displays the Budgie logo in the header of the main shop tab
+ */
 function LogoHeader() {
   return (
     <Image
@@ -19,6 +28,10 @@ function LogoHeader() {
   );
 }
 
+/**
+ * Shopping cart tab icon component
+ * Shows cart icon with item count badge if items are present
+ */
 function CartTabIcon({ color }: { color: string }) {
   const { totalItems } = useAppSelector((state) => state.cart);
   
@@ -45,6 +58,10 @@ function CartTabIcon({ color }: { color: string }) {
   );
 }
 
+/**
+ * Wishlist tab icon component
+ * Shows star icon with fulfilled alerts count badge
+ */
 function WishlistTabIcon({ color }: { color: string }) {
   const items = useAppSelector((state) => state.wishlist.items);
   const fulfilledCount = items.filter(isAlertFulfilled).length;
@@ -72,6 +89,13 @@ function WishlistTabIcon({ color }: { color: string }) {
   );
 }
 
+/**
+ * Main tab layout component
+ * Configures the bottom tab navigation with three tabs:
+ * 1. Shop (Home) - Main product listing
+ * 2. Wishlist - Saved items with price alerts
+ * 3. Cart - Shopping cart with checkout
+ */
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -82,7 +106,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: colorScheme === 'dark' ? '#fff' : '#000',
         tabBarInactiveTintColor: colorScheme === 'dark' ? '#666' : '#999',
         headerShown: true,
-        tabBarButton: (props) => <HapticTab {...props} />,
+        tabBarButton: (props) => <HapticTab {...props} />, // Custom tab button with haptic feedback
         tabBarStyle: {
           borderTopWidth: 1,
           borderTopColor: colorScheme === 'dark' ? '#333' : '#eee',

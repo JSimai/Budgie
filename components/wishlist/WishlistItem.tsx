@@ -1,3 +1,13 @@
+/**
+ * WishlistItem Component
+ * Displays a single item in the wishlist with:
+ * - Product image and details
+ * - Price information and discount badge
+ * - Price alert configuration
+ * - Remove from wishlist option
+ * Features alert status indicators and notification modal
+ */
+
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, useColorScheme, TouchableOpacity, Platform, Image } from 'react-native';
 import { colors, spacing, typography } from '@/styles/theme';
@@ -6,6 +16,15 @@ import { FontAwesome } from '@expo/vector-icons';
 import { removeFromWishlist, setWishlistAlert } from '@/app/store/slices/wishlistSlice';
 import { NotificationModal } from '@/components/wishlist/NotificationModal';
 
+/**
+ * Interface for wishlist item data
+ * @property id - Unique identifier for the product
+ * @property title - Product name
+ * @property price - Original price before discount
+ * @property image - URL of product image
+ * @property discount - Discount information including calculated values
+ * @property alert - Optional price alert configuration
+ */
 export interface WishlistItemData {
   id: number;
   title: string;
@@ -22,10 +41,19 @@ export interface WishlistItemData {
   };
 }
 
+/**
+ * Props for WishlistItem component
+ * Extends WishlistItemData with onPress handler
+ */
 interface WishlistItemProps extends WishlistItemData {
   onPress: () => void;
 }
 
+/**
+ * Checks if a price alert has been fulfilled
+ * @param item - Wishlist item to check
+ * @returns true if alert conditions are met
+ */
 export const isAlertFulfilled = (item: WishlistItemData): boolean => {
   if (!item.alert) return false;
   
@@ -50,18 +78,31 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
   const isDark = colorScheme === 'dark';
   const [showNotificationModal, setShowNotificationModal] = useState(false);
 
+  /**
+   * Memoized check if alert conditions are met
+   * Prevents unnecessary recalculation on re-renders
+   */
   const isFulfilled = useMemo(() => {
     return isAlertFulfilled({ id, title, price, image, discount, alert });
   }, [id, price, discount, alert]);
 
+  /**
+   * Remove item from wishlist
+   */
   const handleRemove = () => {
     dispatch(removeFromWishlist(id));
   };
 
+  /**
+   * Update price alert settings for item
+   */
   const handleSetAlert = (newAlert: { type: 'percentage' | 'price'; value: number }) => {
     dispatch(setWishlistAlert({ productId: id, alert: newAlert }));
   };
 
+  /**
+   * Show notification modal for alert configuration
+   */
   const handleToggleAlert = () => {
     setShowNotificationModal(true);
   };
@@ -78,13 +119,17 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
             borderWidth: isFulfilled ? 2 : 1,
           },
         ]}>
+        {/* Product image section with discount badge */}
         <View style={styles.imageContainer}>
           <Image source={{ uri: image }} style={styles.image} />
+          {/* Discount percentage badge */}
           <View style={styles.discountBadge}>
             <Text style={styles.discountText}>{discount.percentage}% OFF</Text>
           </View>
         </View>
+        {/* Product details section */}
         <View style={styles.contentContainer}>
+          {/* Product title */}
           <Text
             style={[
               styles.title,
@@ -93,8 +138,10 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
             numberOfLines={2}>
             {title}
           </Text>
+          {/* Price and controls section */}
           <View style={styles.priceContainer}>
             <View>
+              {/* Original price (struck through) */}
               <Text
                 style={[
                   styles.originalPrice,
@@ -102,6 +149,7 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
                 ]}>
                 ${price.toFixed(2)}
               </Text>
+              {/* Discounted price */}
               <Text
                 style={[
                   styles.discountedPrice,
@@ -109,6 +157,7 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
                 ]}>
                 ${discount.discountedPrice.toFixed(2)}
               </Text>
+              {/* Alert status indicator */}
               {alert && (
                 <View style={styles.alertContainer}>
                   <FontAwesome 
@@ -127,7 +176,9 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
                 </View>
               )}
             </View>
+            {/* Control buttons */}
             <View style={styles.buttonContainer}>
+              {/* Alert toggle button */}
               <TouchableOpacity
                 onPress={handleToggleAlert}
                 style={styles.notificationButton}>
@@ -137,6 +188,7 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
                   color={isFulfilled ? colors.success : (alert ? colors.primary : colors.secondaryText[isDark ? 'dark' : 'light'])} 
                 />
               </TouchableOpacity>
+              {/* Remove from wishlist button */}
               <TouchableOpacity
                 onPress={handleRemove}
                 style={styles.removeButton}>
@@ -146,6 +198,7 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
           </View>
         </View>
       </TouchableOpacity>
+      {/* Alert configuration modal */}
       <NotificationModal
         visible={showNotificationModal}
         onClose={() => setShowNotificationModal(false)}
@@ -158,7 +211,12 @@ export const WishlistItem: React.FC<WishlistItemProps> = ({
   );
 };
 
+/**
+ * Styles for WishlistItem component
+ * Features responsive layout and platform-specific shadows
+ */
 const styles = StyleSheet.create({
+  // Main container with platform-specific shadow
   itemContainer: {
     flexDirection: 'row',
     borderRadius: 12,
@@ -177,6 +235,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  // Image section styles
   imageContainer: {
     flex: 1,
     padding: spacing.sm,
@@ -189,6 +248,7 @@ const styles = StyleSheet.create({
     height: 100,
     resizeMode: 'contain',
   },
+  // Discount badge styles
   discountBadge: {
     position: 'absolute',
     top: spacing.sm,
@@ -214,6 +274,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  // Content section styles
   contentContainer: {
     flex: 2,
     padding: spacing.sm,
@@ -223,6 +284,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     marginBottom: spacing.xs,
   },
+  // Price section styles
   priceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -234,6 +296,7 @@ const styles = StyleSheet.create({
   discountedPrice: {
     ...typography.title3,
   },
+  // Control buttons styles
   buttonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -245,6 +308,7 @@ const styles = StyleSheet.create({
   removeButton: {
     padding: spacing.sm,
   },
+  // Alert indicator styles
   alertContainer: {
     flexDirection: 'row',
     alignItems: 'center',

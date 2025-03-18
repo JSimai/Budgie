@@ -1,3 +1,8 @@
+/**
+ * Wishlist screen component
+ * Displays saved items with price alerts and allows setting/managing alerts
+ */
+
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, useColorScheme, FlatList, TouchableOpacity, Platform, Image, Modal, TextInput } from 'react-native';
 import { colors, spacing, typography } from '@/styles/theme';
@@ -9,6 +14,7 @@ import { removeFromWishlist, setWishlistAlert, clearWishlistAlert } from '@/app/
 import { WishlistItem, isAlertFulfilled, WishlistItemData } from '@/components/wishlist/WishlistItem';
 import { EmptyState } from '@/components/shared/EmptyState';
 
+// Create animated version of FlatList for smooth animations
 const AnimatedFlatList = Anim.createAnimatedComponent(FlatList<WishlistItemData>);
 
 export default function TabTwoScreen() {
@@ -30,6 +36,9 @@ export default function TabTwoScreen() {
     });
   }, [items]);
 
+  /**
+   * Navigate to product details modal when item is pressed
+   */
   const handleItemPress = (productId: number) => {
     router.push({
       pathname: '/modals/product/[id]',
@@ -44,8 +53,10 @@ export default function TabTwoScreen() {
         { backgroundColor: colors.background[isDark ? 'dark' : 'light'] },
       ]}>
       {items.length === 0 ? (
+        // Show empty state when no items in wishlist
         <EmptyState message="Your wishlist is empty" />
       ) : (
+        // Animated list of wishlist items
         <AnimatedFlatList
           data={sortedItems}
           renderItem={({ item, index }) => (
@@ -65,6 +76,7 @@ export default function TabTwoScreen() {
   );
 }
 
+// Styles for wishlist screen and alert modal
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -72,6 +84,7 @@ const styles = StyleSheet.create({
   list: {
     padding: spacing.md,
   },
+  // Modal styles for alert setup
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -82,6 +95,7 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 16,
     padding: spacing.lg,
+    // Platform-specific shadow styles
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -109,6 +123,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     textAlign: 'left',
   },
+  // Alert type selection styles
   alertTypeContainer: {
     flexDirection: 'row',
     marginBottom: spacing.lg,
@@ -132,6 +147,7 @@ const styles = StyleSheet.create({
   alertTypeTextActive: {
     color: '#fff',
   },
+  // Alert value input styles
   inputContainer: {
     marginBottom: spacing.lg,
   },
@@ -160,6 +176,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     marginLeft: spacing.xs,
   },
+  // Action button styles
   setAlertButton: {
     flexDirection: 'row',
     alignItems: 'center',

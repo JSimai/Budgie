@@ -1,8 +1,27 @@
+/**
+ * NotificationModal Component
+ * A modal dialog for configuring price alerts on wishlist items
+ * Features:
+ * - Toggle between percentage and price-based alerts
+ * - Input validation and formatting
+ * - Preserves existing alert settings
+ * - Responsive design with dark mode support
+ */
+
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, useColorScheme, TouchableOpacity, Platform, Modal, TextInput } from 'react-native';
 import { colors, spacing, typography } from '@/styles/theme';
 import { FontAwesome } from '@expo/vector-icons';
 
+/**
+ * Props for NotificationModal component
+ * @property visible - Controls modal visibility
+ * @property onClose - Callback when modal is closed
+ * @property productTitle - Title of product to show in modal
+ * @property currentPrice - Current product price for default calculations
+ * @property onSetAlert - Callback when alert is configured
+ * @property existingAlert - Optional current alert settings
+ */
 interface NotificationModalProps {
   visible: boolean;
   onClose: () => void;
@@ -25,6 +44,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+
+  // Initialize state with existing alert settings or defaults
   const [selectedType, setSelectedType] = useState<'percentage' | 'price'>(
     existingAlert?.type || 'percentage'
   );
@@ -36,9 +57,13 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   const [priceValue, setPriceValue] = useState(
     existingAlert?.type === 'price'
       ? existingAlert.value.toString()
-      : (currentPrice / 2).toFixed(2)
+      : (currentPrice / 2).toFixed(2)  // Default to 50% of current price
   );
 
+  /**
+   * Handle alert configuration submission
+   * Validates input and calls onSetAlert callback
+   */
   const handleSetAlert = () => {
     const value = selectedType === 'percentage' 
       ? Number(percentageValue)
@@ -62,6 +87,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             styles.modalContent,
             { backgroundColor: colors.background[isDark ? 'dark' : 'light'] },
           ]}>
+          {/* Modal header with title and close button */}
           <View style={styles.modalHeader}>
             <Text
               style={[
@@ -78,6 +104,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             </TouchableOpacity>
           </View>
 
+          {/* Product title */}
           <Text
             style={[
               styles.productTitle,
@@ -87,6 +114,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             {productTitle}
           </Text>
           
+          {/* Alert type selector */}
           <View style={styles.alertTypeContainer}>
             <TouchableOpacity
               style={[
@@ -116,6 +144,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             </TouchableOpacity>
           </View>
 
+          {/* Percentage input section */}
           {selectedType === 'percentage' ? (
             <View style={styles.inputContainer}>
               <Text style={[
@@ -142,6 +171,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
               </View>
             </View>
           ) : (
+            // Price input section
             <View style={styles.inputContainer}>
               <Text style={[
                 styles.inputLabel,
@@ -168,6 +198,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             </View>
           )}
 
+          {/* Set alert button */}
           <TouchableOpacity style={styles.setAlertButton} onPress={handleSetAlert}>
             <FontAwesome name="bell" size={20} color={colors.primary} />
             <Text style={styles.setAlertButtonText}>Set Alert</Text>
@@ -178,13 +209,19 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   );
 };
 
+/**
+ * Styles for NotificationModal component
+ * Features responsive layout and platform-specific shadows
+ */
 const styles = StyleSheet.create({
+  // Modal overlay with semi-transparent background
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // Modal content container with platform-specific shadow
   modalContent: {
     width: '90%',
     borderRadius: 16,
@@ -201,6 +238,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  // Header section styles
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -216,6 +254,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     textAlign: 'left',
   },
+  // Alert type selector styles
   alertTypeContainer: {
     flexDirection: 'row',
     marginBottom: spacing.lg,
@@ -237,6 +276,7 @@ const styles = StyleSheet.create({
   alertTypeTextActive: {
     color: colors.primary,
   },
+  // Input section styles
   inputContainer: {
     marginBottom: spacing.lg,
   },
@@ -265,6 +305,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     marginLeft: spacing.xs,
   },
+  // Set alert button styles
   setAlertButton: {
     flexDirection: 'row',
     alignItems: 'center',

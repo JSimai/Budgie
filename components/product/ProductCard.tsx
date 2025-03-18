@@ -1,3 +1,13 @@
+/**
+ * ProductCard Component
+ * A card component that displays product information with:
+ * - Discount badges (percentage and dollar savings)
+ * - Product image
+ * - Title and pricing information
+ * - Cart quantity indicator
+ * Features responsive design and platform-specific styling
+ */
+
 import React from 'react';
 import {
   View,
@@ -12,6 +22,15 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useAppSelector } from '@/app/store/hooks';
 import { colors, spacing, typography } from '@/styles/theme';
 
+/**
+ * Props for ProductCard component
+ * @property id - Unique identifier for the product
+ * @property title - Product name
+ * @property price - Original price before discount
+ * @property image - URL of product image
+ * @property discount - Discount information including calculated values
+ * @property onPress - Callback when card is pressed
+ */
 interface ProductCardProps {
   id: number;
   title: string;
@@ -25,6 +44,12 @@ interface ProductCardProps {
   onPress: () => void;
 }
 
+/**
+ * Determines badge color based on discount percentage
+ * Higher discounts get more prominent colors
+ * @param percentage - Discount percentage
+ * @returns Color from theme palette
+ */
 const getBadgeColor = (percentage: number) => {
   if (percentage >= 50) return colors.primary5;
   if (percentage >= 40) return colors.primary4;
@@ -44,12 +69,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  // Get cart state for this product
+  // Get cart state for this product to show quantity badge
   const cartItem = useAppSelector((state) =>
     state.cart.items.find((item) => item.id === id)
   );
   const quantity = cartItem?.quantity || 0;
-
 
   return (
     <Pressable
@@ -61,7 +85,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           borderColor: colors.border[isDark ? 'dark' : 'light'],
         },
       ]}>
+      {/* Image section with discount badges */}
       <View style={styles.imageSection}>
+        {/* Percentage discount badge */}
         <View style={[
           styles.savingsBadge,
           { backgroundColor: getBadgeColor(discount.percentage) },
@@ -70,9 +96,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <Text style={styles.savingsAmount}>{discount.percentage}% OFF</Text>
           </View>
         </View>
+        {/* Product image container */}
         <View style={styles.imageContainer}>
           <Image source={{ uri: image }} style={styles.image} />
         </View>
+        {/* Dollar savings badge */}
         <View style={[
           styles.dollarSavingsBadge,
           { backgroundColor: getBadgeColor(discount.percentage) },
@@ -80,6 +108,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Text style={styles.dollarSavingsAmount}>-${discount.savings.toFixed(2)}</Text>
         </View>
       </View>
+      {/* Product details section */}
       <View style={styles.content}>
         <Text
           style={[
@@ -89,26 +118,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           numberOfLines={2}>
           {title}
         </Text>
-        {/* <View style={styles.priceContainer}> */}
-          <View>
-            <Text
-              style={[
-                styles.originalPrice,
-                { color: colors.secondaryText[isDark ? 'dark' : 'light'] },
-              ]}>
-              ${price.toFixed(2)}
-            </Text>
-            <Text
-              style={[
-                styles.discountedPrice,
-                { color: colors.text[isDark ? 'dark' : 'light'] },
-              ]}>
-              ${discount.discountedPrice.toFixed(2)}
-            </Text>
-            {/* <Text style={styles.savings}>Save ${discount.savings.toFixed(2)}</Text> */}
-          </View>
-        {/* </View> */}
+        <View>
+          {/* Original price (struck through) */}
+          <Text
+            style={[
+              styles.originalPrice,
+              { color: colors.secondaryText[isDark ? 'dark' : 'light'] },
+            ]}>
+            ${price.toFixed(2)}
+          </Text>
+          {/* Discounted price */}
+          <Text
+            style={[
+              styles.discountedPrice,
+              { color: colors.text[isDark ? 'dark' : 'light'] },
+            ]}>
+            ${discount.discountedPrice.toFixed(2)}
+          </Text>
+        </View>
       </View>
+      {/* Cart quantity badge - only shown when product is in cart */}
       {quantity > 0 && (
         <View style={styles.quantityBadge}>
           <FontAwesome name="shopping-cart" size={12} color="#fff" style={styles.cartIcon} />
@@ -119,10 +148,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   );
 };
 
+/**
+ * Styles for ProductCard component
+ * Features platform-specific shadows and consistent spacing
+ */
 const styles = StyleSheet.create({
+  // Cart icon in quantity badge
   cartIcon: {
     marginRight: spacing.xs,
   },
+  // Main container with platform-specific shadow
   container: {
     flex: 1,
     margin: spacing.xs,
@@ -141,18 +176,22 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  // Content section containing title and prices
   content: {
     padding: spacing.sm,
   },
+  // Discounted price text style
   discountedPrice: {
     ...typography.title2,
     color: colors.primary,
   },
+  // Dollar savings badge text
   dollarSavingsAmount: {
     ...typography.caption1,
     color: '#fff',
     fontWeight: 'bold',
   },
+  // Dollar savings badge container
   dollarSavingsBadge: {
     position: 'absolute',
     bottom: spacing.sm,
@@ -172,6 +211,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  // Product image styles
   image: {
     width: '100%',
     height: 160,
@@ -188,10 +228,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'relative',
   },
+  // Original price text (struck through)
   originalPrice: {
     ...typography.caption1,
     textDecorationLine: 'line-through',
   },
+  // Cart quantity badge styles
   quantityBadge: {
     position: 'absolute',
     bottom: spacing.sm,
@@ -219,6 +261,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  // Savings text styles
   savings: {
     ...typography.caption1,
     color: colors.primary,
@@ -229,6 +272,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  // Percentage savings badge styles
   savingsBadge: {
     backgroundColor: colors.primary,
     width: 40,
@@ -248,10 +292,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   savingsTextContainer: {
-    width: 160,
-    justifyContent: 'center',
     transform: [{ rotate: '-90deg' }],
+    width: 160,
+    alignItems: 'center',
   },
+  // Product title text
   title: {
     ...typography.body,
     marginBottom: spacing.xs,

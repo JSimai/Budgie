@@ -13,14 +13,16 @@ interface CartItem {
   };
 }
 
+// Types for cart-related state management
 interface CartState {
-  items: CartItem[];
-  totalItems: number;
-  totalPrice: number;
-  totalDiscount: number;
-  isOpen: boolean;
+  items: CartItem[];  // Array of items in cart
+  totalItems: number;  // Total quantity of all items
+  totalPrice: number;  // Total price before discounts
+  totalDiscount: number;  // Total savings from discounts
+  isOpen: boolean;  // Cart drawer open state
 }
 
+// Initial cart state
 const initialState: CartState = {
   items: [],
   totalItems: 0,
@@ -29,6 +31,7 @@ const initialState: CartState = {
   isOpen: false,
 };
 
+// Utility function to calculate cart totals
 const calculateTotals = (items: CartItem[]) => {
   return items.reduce(
     (acc, item) => {
@@ -44,10 +47,12 @@ const calculateTotals = (items: CartItem[]) => {
   );
 };
 
+// Main cart slice with reducers
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
+    // Add item to cart or increment quantity if exists
     addToCart: (state, action: PayloadAction<Omit<CartItem, 'quantity'>>) => {
       const existingItem = state.items.find(item => item.id === action.payload.id);
       
@@ -57,12 +62,14 @@ const cartSlice = createSlice({
         state.items.push({ ...action.payload, quantity: 1 });
       }
       
+      // Update cart totals after adding item
       const totals = calculateTotals(state.items);
       state.totalItems = totals.totalItems;
       state.totalPrice = totals.totalPrice;
       state.totalDiscount = totals.totalDiscount;
     },
     
+    // Remove item from cart completely
     removeFromCart: (state, action: PayloadAction<number>) => {
       state.items = state.items.filter(item => item.id !== action.payload);
       const totals = calculateTotals(state.items);
@@ -71,6 +78,7 @@ const cartSlice = createSlice({
       state.totalDiscount = totals.totalDiscount;
     },
     
+    // Update item quantity or remove if quantity becomes 0
     updateQuantity: (state, action: PayloadAction<{ id: number; quantity: number }>) => {
       const item = state.items.find(item => item.id === action.payload.id);
       if (item) {
@@ -85,6 +93,7 @@ const cartSlice = createSlice({
       state.totalDiscount = totals.totalDiscount;
     },
     
+    // Clear all items from cart
     clearCart: (state) => {
       state.items = [];
       state.totalItems = 0;
@@ -92,11 +101,13 @@ const cartSlice = createSlice({
       state.totalDiscount = 0;
     },
     
+    // Toggle cart drawer visibility
     setCartOpen: (state, action: PayloadAction<boolean>) => {
       state.isOpen = action.payload;
     },
   },
 });
 
+// Export actions for use in components
 export const { addToCart, removeFromCart, updateQuantity, clearCart, setCartOpen } = cartSlice.actions;
 export default cartSlice.reducer; 

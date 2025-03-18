@@ -1,3 +1,8 @@
+/**
+ * Product details modal component
+ * Displays detailed product information, price, discounts, and purchase options
+ */
+
 import React from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
@@ -24,14 +29,20 @@ export default function ProductModal() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  // Get product details from Redux store
   const product = useAppSelector((state) =>
     state.products.items.find((p) => p.id === Number(id))
   );
 
+  // Check if product is in wishlist
   const isInWishlist = useAppSelector((state) =>
     state.wishlist.items.some((item) => item.id === Number(id))
   );
 
+  /**
+   * Toggle product in wishlist
+   * Adds or removes the product based on current state
+   */
   const handleWishlistToggle = () => {
     if (product) {
       if (isInWishlist) {
@@ -48,6 +59,10 @@ export default function ProductModal() {
     }
   };
 
+  /**
+   * Get badge color based on discount percentage
+   * Higher discounts get more prominent colors
+   */
   const getBadgeColor = (percentage: number) => {
     if (percentage >= 50) return colors.primary5;
     if (percentage >= 40) return colors.primary4;
@@ -56,6 +71,7 @@ export default function ProductModal() {
     return colors.primary;
   };
 
+  // Show error state if product not found
   if (!product) {
     return (
       <View style={styles.centered}>
@@ -82,6 +98,7 @@ export default function ProductModal() {
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollViewContent}>
+          {/* Header with back and wishlist buttons */}
           <View style={styles.headerButtons}>
             <TouchableOpacity
               onPress={() => router.back()}
@@ -102,6 +119,7 @@ export default function ProductModal() {
               />
             </TouchableOpacity>
           </View>
+          {/* Product image with discount badges */}
           <View style={styles.imageSection}>
             <View style={[
               styles.savingsBadge,
@@ -121,6 +139,7 @@ export default function ProductModal() {
               <Text style={styles.dollarSavingsAmount}>-${product.discount!.savings.toFixed(2)}</Text>
             </View>
           </View>
+          {/* Product details section */}
           <View style={styles.content}>
             <Text
               style={[
@@ -136,6 +155,7 @@ export default function ProductModal() {
               ]}>
               {product.description}
             </Text>
+            {/* Price display */}
             <View>
               <Text
                 style={[
@@ -154,6 +174,7 @@ export default function ProductModal() {
           </View>
         </ScrollView>
 
+        {/* Add to cart button container */}
         <View style={[
           styles.buttonContainer,
           { 
@@ -174,6 +195,7 @@ export default function ProductModal() {
   );
 }
 
+// Styles for product modal components
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -182,13 +204,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: 120,
+    paddingBottom: 120,  // Space for fixed button container
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // Fixed button container at bottom
   buttonContainer: {
     position: 'absolute',
     bottom: 0,
@@ -214,6 +237,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: spacing.lg,
   },
+  // Image section styles
   imageSection: {
     flexDirection: 'row',
     position: 'relative',

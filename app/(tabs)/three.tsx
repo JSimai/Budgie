@@ -1,3 +1,8 @@
+/**
+ * Shopping cart screen component
+ * Displays cart items, order summary, and handles checkout process
+ */
+
 import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, useColorScheme, FlatList, TouchableOpacity, Platform } from 'react-native';
 import { colors, spacing, typography } from '@/styles/theme';
@@ -9,6 +14,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { clearCart } from '@/app/store/slices/cartSlice';
 
+// Type definition for cart items
 interface CartItemType {
   id: number;
   title: string;
@@ -22,22 +28,25 @@ interface CartItemType {
   };
 }
 
+// Create animated version of FlatList for smooth animations
 const AnimatedFlatList = Anim.createAnimatedComponent(FlatList<CartItemType>);
 
 export default function TabThreeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const [showCelebration, setShowCelebration] = useState(false);
-  const fadeAnim = useSharedValue(0);
+  const fadeAnim = useSharedValue(0);  // Animation value for celebration popup
   const isFocused = useIsFocused();
-  const [key, setKey] = useState(0); // Key to force animation reset
+  const [key, setKey] = useState(0);  // Key to force animation reset
   const dispatch = useAppDispatch();
   const router = useRouter();
 
+  // Animated style for celebration popup
   const animatedStyles = useAnimatedStyle(() => ({
     opacity: fadeAnim.value,
   }));
 
+  // Get cart state from Redux
   const { items, totalItems, totalPrice, totalDiscount } = useAppSelector(
     (state) => state.cart
   );
@@ -49,16 +58,22 @@ export default function TabThreeScreen() {
     }
   }, [isFocused]);
 
+  // Calculate final total after discounts
   const finalTotal = totalPrice - totalDiscount;
 
+  /**
+   * Handle checkout process
+   * Shows celebration animation, clears cart, and navigates back
+   */
   const handleCheckout = () => {
     setShowCelebration(true);
+    // Fade in celebration, wait, then fade out
     fadeAnim.value = withSequence(
       withTiming(1, { duration: 500 }),
       withDelay(2000, withTiming(0, { duration: 500 }))
     );
     
-    // After the celebration animation, clear cart and navigate
+    // After animation completes, reset cart and navigate
     setTimeout(() => {
       setShowCelebration(false);
       dispatch(clearCart());
@@ -73,6 +88,7 @@ export default function TabThreeScreen() {
         { backgroundColor: colors.background[isDark ? 'dark' : 'light'] },
       ]}>
       {totalItems === 0 ? (
+        // Show empty state when cart is empty
         <Anim.View 
           key={`empty-${key}`}
           entering={FadeInDown}
@@ -87,6 +103,7 @@ export default function TabThreeScreen() {
         </Anim.View>
       ) : (
         <>
+          {/* Animated list of cart items */}
           <AnimatedFlatList
             key={`list-${key}`}
             data={items as CartItemType[]}
@@ -99,10 +116,12 @@ export default function TabThreeScreen() {
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.list}
           />
+          {/* Order summary and checkout section */}
           <Anim.View
             key={`summary-${key}`}
             entering={FadeInDown.delay(items.length * 100)}>
             <View style={styles.summary}>
+              {/* Subtotal row */}
               <View style={styles.summaryRow}>
                 <Text
                   style={[
@@ -119,6 +138,7 @@ export default function TabThreeScreen() {
                   ${totalPrice.toFixed(2)}
                 </Text>
               </View>
+              {/* Savings row */}
               <View style={styles.summaryRow}>
                 <Text
                   style={[
@@ -135,6 +155,7 @@ export default function TabThreeScreen() {
                   -${totalDiscount.toFixed(2)}
                 </Text>
               </View>
+              {/* Final total row */}
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text
                   style={[
@@ -152,6 +173,7 @@ export default function TabThreeScreen() {
                 </Text>
               </View>
             </View>
+            {/* Checkout button */}
             <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
               <FontAwesome name="credit-card" size={22} color={colors.primary} />
               <Text style={styles.checkoutButtonText}>Checkout</Text>
@@ -159,6 +181,7 @@ export default function TabThreeScreen() {
           </Anim.View>
         </>
       )}
+      {/* Celebration popup */}
       {showCelebration && (
         <Anim.View 
           style={[
@@ -178,10 +201,12 @@ export default function TabThreeScreen() {
   );
 }
 
+// Styles for cart screen components
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  // Empty state styles
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -191,9 +216,11 @@ const styles = StyleSheet.create({
     ...typography.body,
     textAlign: 'center',
   },
+  // Cart list styles
   list: {
     padding: spacing.md,
   },
+  // Order summary styles
   summary: {
     padding: spacing.lg,
     borderTopWidth: 1,
@@ -222,6 +249,7 @@ const styles = StyleSheet.create({
   totalValue: {
     ...typography.title2,
   },
+  // Checkout button styles
   checkoutButton: {
     borderColor: colors.primary,
     borderWidth: 2,
@@ -239,6 +267,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginLeft: spacing.sm,
   },
+  // Celebration popup styles
   celebrationPopup: {
     position: 'absolute',
     top: '40%',
@@ -248,16 +277,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.background.light,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.25,
         shadowRadius: 4,
       },
       android: {
-        elevation: 4,
+        elevation: 5,
       },
     }),
   },

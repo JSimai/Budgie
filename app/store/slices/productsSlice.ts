@@ -14,17 +14,19 @@ interface Product {
   };
 }
 
+// Types for product-related state management
 interface ProductsState {
-  items: Product[];
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
-  error: string | null;
+  items: Product[];  // Array of all products
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';  // API request status
+  error: string | null;  // Error message if API request fails
   filters: {
-    category: string[];
-    sortBy: 'biggestDiscount' | 'biggestSaving' | 'lowestPrice' | 'highestPrice';
-    searchQuery: string;
+    category: string[];  // Selected category filters
+    sortBy: 'biggestDiscount' | 'biggestSaving' | 'lowestPrice' | 'highestPrice';  // Current sort method
+    searchQuery: string;  // Current search term
   };
 }
 
+// Initial state configuration
 const initialState: ProductsState = {
   items: [],
   status: 'idle',
@@ -36,7 +38,7 @@ const initialState: ProductsState = {
   },
 };
 
-// Helper function to capitalize each word in a string
+// Utility function to format category names
 const capitalizeWords = (str: string): string => {
   return str.split(' ').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
@@ -59,7 +61,7 @@ const generateDiscount = (price: number) => {
   };
 };
 
-// Async for fetching products
+// Async thunk for fetching products from the API
 export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async () => {
@@ -69,7 +71,7 @@ export const fetchProducts = createAsyncThunk(
     }
     const data: Product[] = await response.json();
     
-    // Add discounts to products and capitalize categories
+    // Transform API data: capitalize categories and add random discounts
     return data.map(product => ({
       ...product,
       category: capitalizeWords(product.category),
@@ -78,10 +80,12 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
+// Main products slice with reducers and async logic
 const productsSlice = createSlice({
   name: 'products',
   initialState,
   reducers: {
+    // Toggle category filter
     setCategory: (state, action: PayloadAction<string>) => {
       const category = action.payload;
       const index = state.filters.category.indexOf(category);
@@ -91,12 +95,18 @@ const productsSlice = createSlice({
         state.filters.category.splice(index, 1);
       }
     },
+    
+    // Update sort method
     setSortBy: (state, action: PayloadAction<ProductsState['filters']['sortBy']>) => {
       state.filters.sortBy = action.payload;
     },
+    
+    // Update search query
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.filters.searchQuery = action.payload;
     },
+    
+    // Regenerate random discounts for all products
     regenerateDiscounts: (state) => {
       state.items = state.items.map(product => ({
         ...product,
@@ -104,6 +114,8 @@ const productsSlice = createSlice({
       }));
     },
   },
+  
+  // Handle async API states
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -120,5 +132,6 @@ const productsSlice = createSlice({
   },
 });
 
+// Export actions for use in components
 export const { setCategory, setSortBy, setSearchQuery, regenerateDiscounts } = productsSlice.actions;
 export default productsSlice.reducer; 

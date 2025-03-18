@@ -1,3 +1,12 @@
+/**
+ * BottomControls Component
+ * A complex control panel fixed to the bottom of the screen that provides:
+ * - Product sorting functionality
+ * - Category filtering
+ * - Search capabilities
+ * Features responsive design and smooth animations with platform-specific styling
+ */
+
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -18,8 +27,18 @@ import {
 import { colors, spacing, typography } from '@/styles/theme';
 import { SearchBar } from './SearchBar';
 
+/**
+ * Defines the current mode of the controls panel
+ * - none: Default state, minimal controls shown
+ * - filter: Category filters expanded
+ * - sort: Sort options expanded
+ */
 type ControlMode = 'none' | 'filter' | 'sort';
 
+/**
+ * Available sorting options for products
+ * Each option has an id for Redux state and a user-friendly label
+ */
 const sortOptions = [
   { id: 'biggestDiscount', label: 'Biggest Discount' },
   { id: 'biggestSaving', label: 'Biggest Saving' },
@@ -27,6 +46,10 @@ const sortOptions = [
   { id: 'highestPrice', label: 'Highest Price' },
 ] as const;
 
+/**
+ * Props for the BottomControls component
+ * @property onHeightChange - Optional callback for when the controls panel height changes
+ */
 interface BottomControlsProps {
   onHeightChange?: (height: number) => void;
 }
@@ -37,29 +60,48 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
   const isDark = colorScheme === 'dark';
   const [mode, setMode] = useState<ControlMode>('none');
 
+  // Redux state selectors
   const items = useAppSelector((state) => state.products.items);
   const selectedCategories = useAppSelector((state) => state.products.filters.category);
   const currentSort = useAppSelector((state) => state.products.filters.sortBy);
 
-  // Memoize categories derivation
+  /**
+   * Memoized derivation of unique categories from products
+   * Prevents unnecessary recalculation when products haven't changed
+   */
   const categories = useMemo(() => {
     const uniqueCategories = new Set(items.map((p) => p.category));
     return Array.from(uniqueCategories);
   }, [items]);
 
+  /**
+   * Toggles category selection in Redux store
+   * Same category can be clicked again to deselect
+   */
   const handleCategorySelect = (category: string) => {
     dispatch(setCategory(category));
   };
 
+  /**
+   * Updates sort order in Redux store and collapses sort panel
+   */
   const handleSortSelect = (sort: typeof sortOptions[number]['id']) => {
     dispatch(setSortBy(sort));
     setMode('none');
   };
 
+  /**
+   * Toggles between control modes (filter/sort/none)
+   * If current mode is selected again, collapses to 'none'
+   */
   const toggleMode = (newMode: ControlMode) => {
     setMode(mode === newMode ? 'none' : newMode);
   };
 
+  /**
+   * Notifies parent component of height changes
+   * Useful for adjusting scroll views or other layout elements
+   */
   const handleLayout = (event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout;
     onHeightChange?.(height);
@@ -72,7 +114,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
         borderTopColor: colors.border[isDark ? 'dark' : 'light'],
       }]}
       onLayout={handleLayout}>
-      {/* Sort Section */}
+      {/* Sort Section - Expandable sort options with current selection display */}
       <TouchableOpacity
         style={[
           styles.sortButton,
@@ -91,13 +133,13 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
           />
           
           {mode === 'sort' ? (
+            // Expanded view showing all sort options
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sortOptions}>
               {sortOptions.map((option) => (
                 <TouchableOpacity
                   key={option.id}
                   style={[
                     styles.sortOption,
-                    // currentSort === option.id && styles.selectedSortOption,
                   ]}
                   onPress={() => handleSortSelect(option.id)}>
                   <Text style={[
@@ -112,6 +154,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
           )
           :
           (
+            // Collapsed view showing current sort selection
             <Text style={[styles.sortText, { color: colors.text[isDark ? 'dark' : 'light'] }]}>
               {sortOptions.find(opt => opt.id === currentSort)?.label}
             </Text>
@@ -119,7 +162,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
         </View>
       </TouchableOpacity>
 
-      {/* Filter Section */}
+      {/* Filter Section - Shows when filter mode is active or categories are selected */}
       {(mode === 'filter' || selectedCategories.length > 0) && (
         <View style={styles.filterSection}>
           <View style={[styles.filterIcon,
@@ -135,7 +178,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
             />
           </View>
           {mode === 'filter' ? (
-            // Grid view of all filters when open
+            // Grid view of all available category filters
             <View style={styles.filterGrid}>
               {categories.map((category) => (
                 <TouchableOpacity
@@ -162,7 +205,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
               ))}
             </View>
           ) : (
-            // Horizontal scroll of selected filters when closed
+            // Horizontal scroll of only selected category filters
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -187,7 +230,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
         </View>
       )}
 
-      {/* Controls Row */}
+      {/* Controls Row - Search bar and filter toggle button */}
       <View style={styles.controlsRow}>
         <View style={styles.searchContainer}>
           <SearchBar />
@@ -212,7 +255,12 @@ export const BottomControls: React.FC<BottomControlsProps> = ({ onHeightChange }
   );
 };
 
+/**
+ * Styles for the BottomControls component
+ * Features platform-specific shadows and animations
+ */
 const styles = StyleSheet.create({
+  // Container styles - Fixed position at bottom with semi-transparent background
   container: {
     position: 'absolute',
     bottom: 0,
@@ -222,9 +270,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     gap: spacing.sm,
     borderTopWidth: 1,
-    // borderTopRightRadius: 20,
-    // borderTopLeftRadius: 20,
   },
+  // Sort button styles - Expandable button with shadow
   sortButton: {
     borderRadius: 20,
     borderWidth: 1,
@@ -255,11 +302,9 @@ const styles = StyleSheet.create({
     ...typography.caption1,
     fontWeight: '500',
   },
+  // Sort options styles - Horizontal scrollable list
   sortOptions: {
     flexDirection: 'row',
-    // borderTopWidth: 1,
-    // borderTopColor: colors.border.light,
-    // padding: spacing.xs,
   },
   sortOption: {
     paddingHorizontal: spacing.sm,
@@ -272,6 +317,7 @@ const styles = StyleSheet.create({
   sortOptionText: {
     ...typography.caption1,
   },
+  // Filter section styles - Grid or horizontal scroll of category pills
   filterSection: {
     marginVertical: spacing.xs,
     flexDirection: 'row',
@@ -286,6 +332,7 @@ const styles = StyleSheet.create({
   selectedFiltersScroll: {
     flexGrow: 0,
   },
+  // Filter pill styles - Interactive category buttons with states
   filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -307,7 +354,6 @@ const styles = StyleSheet.create({
     }),
   },
   selectedFilterPill: {
-    // backgroundColor: colors.primary,
     borderColor: colors.primary,
     marginRight: spacing.xs,
   },
@@ -317,6 +363,7 @@ const styles = StyleSheet.create({
   pillIcon: {
     marginLeft: spacing.xs,
   },
+  // Controls row styles - Search bar and filter button container
   controlsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -336,6 +383,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  // Filter button styles - Circular toggle button
   filterButton: {
     width: 40,
     height: 40,
@@ -355,6 +403,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  // Filter icon styles - Small circular icon container
   filterIcon: {
     width: 27,
     height: 27,
