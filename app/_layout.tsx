@@ -4,18 +4,26 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { useColorScheme, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
+import { Provider } from 'react-redux';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { store } from './store';
+import { useAppDispatch, useAppSelector } from './store/hooks';
+import { fetchProducts } from './store/slices/productsSlice';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayoutContent() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  const dispatch = useAppDispatch();
+  const productsStatus = useAppSelector((state) => state.products.status);
 
   useEffect(() => {
     if (loaded) {
@@ -23,17 +31,37 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  useEffect(() => {
+    // Fetch products on mount and when dispatch changes
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
   if (!loaded) {
     return null;
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+      <GestureHandlerRootView style={styles.container}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style="auto" />
+      </GestureHandlerRootView>
     </ThemeProvider>
   );
 }
+
+export default function RootLayout() {
+  return (
+    <Provider store={store}>
+      <RootLayoutContent />
+    </Provider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
