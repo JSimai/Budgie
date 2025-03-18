@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.background.light,
+    backgroundColor: colors.primary,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
