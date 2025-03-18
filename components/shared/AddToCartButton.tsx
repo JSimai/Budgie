@@ -1,10 +1,10 @@
 /**
  * AddToCartButton Component
  * Provides add to cart functionality with quantity controls
- * Changes appearance and behavior based on cart state
+ * Features smooth animations for state transitions
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,14 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { addToCart, updateQuantity } from '@/app/store/slices/cartSlice';
 import { colors, spacing, typography } from '@/styles/theme';
 import { useRouter } from 'expo-router';
+import Animated, { 
+  useAnimatedStyle, 
+  withSpring, 
+  withTiming,
+  interpolateColor,
+  FadeIn,
+  FadeOut
+} from 'react-native-reanimated';
 
 /**
  * Props for AddToCartButton component
@@ -38,6 +46,8 @@ interface AddToCartButtonProps {
     savings: number;
   };
 }
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 /**
  * Button component for adding products to cart
@@ -60,12 +70,37 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     state.cart.items.find((item) => item.id === productId)
   );
   const quantity = cartItem?.quantity || 0;
-  const [isAdded, setIsAdded] = useState(quantity > 0);
+  const isAdded = quantity > 0;
 
-  // Update local state when cart quantity changes
-  useEffect(() => {
-    setIsAdded(quantity > 0);
-  }, [quantity]);
+  // Animated styles for the main button
+  const buttonStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: withSpring(
+        isAdded ? colors.success : colors.background[isDark ? 'dark' : 'light']
+      ),
+      borderColor: withSpring(
+        isAdded ? colors.success : colors.primary
+      ),
+      transform: [
+        {
+          scale: withSpring(isAdded ? 1 : 1, {
+            damping: 15,
+            stiffness: 150,
+          }),
+        },
+      ],
+    };
+  }, [isAdded, isDark]);
+
+  // Animated styles for the button text
+  const textStyle = useAnimatedStyle(() => {
+    return {
+      color: withTiming(
+        isAdded ? '#fff' : colors.primary,
+        { duration: 200 }
+      ),
+    };
+  }, [isAdded]);
 
   /**
    * Handle add to cart button press
@@ -118,33 +153,30 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   return (
     <View style={styles.container}>
       {/* Main add to cart button */}
-      <TouchableOpacity
-        style={[
-          styles.button,
-          {
-            borderColor: isAdded ? colors.success : colors.primary,
-            backgroundColor: isAdded ? colors.success : colors.background[isDark ? 'dark' : 'light'],
-          },
-        ]}
+      <AnimatedTouchable
+        style={[styles.button, buttonStyle]}
         onPress={handleAddToCart}>
         <View style={styles.buttonContent}>
-          {isAdded ? (
-            <FontAwesome name="shopping-cart" size={22} color={"#fff"} style={styles.icon} />
-          ) : (
-            <FontAwesome name="cart-plus" size={22} color={colors.primary} style={styles.icon} />
-          )}
-          <Text style={[
-            styles.buttonText,
-            { color: isAdded ? "#fff" : colors.primary },
-          ]}>
+          <Animated.View>
+            <FontAwesome 
+              name={isAdded ? "shopping-cart" : "cart-plus"} 
+              size={22} 
+              color={isAdded ? "#fff" : colors.primary} 
+              style={styles.icon} 
+            />
+          </Animated.View>
+          <Animated.Text style={[styles.buttonText, textStyle]}>
             {isAdded ? 'View in Cart' : 'Add to Cart'}
-          </Text>
+          </Animated.Text>
         </View>
-      </TouchableOpacity>
+      </AnimatedTouchable>
 
-      {/* Quantity controls - only shown when item is in cart */}
+      {/* Quantity controls with enter/exit animations */}
       {isAdded && (
-        <View style={styles.quantityContainer}>
+        <Animated.View 
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={styles.quantityContainer}>
           <TouchableOpacity
             onPress={handleDecrement}
             style={[styles.quantityButton, styles.decrementButton]}>
@@ -154,19 +186,19 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
               color={colors.danger}
             />
           </TouchableOpacity>
-          <Text
+          <Animated.Text
             style={[
               styles.quantity,
               { color: colors.text[isDark ? 'dark' : 'light'] },
             ]}>
             {quantity}
-          </Text>
+          </Animated.Text>
           <TouchableOpacity
             onPress={handleIncrement}
             style={[styles.quantityButton, styles.incrementButton]}>
             <FontAwesome name="plus" size={16} color={colors.success} />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
     </View>
   );
@@ -228,7 +260,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   decrementButton: {
-    backgroundColor: colors.discount + '20',  // 20% opacity
+    backgroundColor: colors.danger + '20',  // 20% opacity
   },
   incrementButton: {
     backgroundColor: colors.success + '20',  // 20% opacity

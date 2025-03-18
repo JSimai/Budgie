@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   decrementButton: {
-    backgroundColor: colors.discount + '20', // 20% opacity
+    backgroundColor: colors.danger + '20', // 20% opacity
   },
   incrementButton: {
     backgroundColor: colors.success + '20', // 20% opacity

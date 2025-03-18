@@ -1,15 +1,13 @@
 import { StyleSheet } from 'react-native';
 
 export const colors = {
-  primary: '#C8A2C8',
-  primary2: '#BB8CBB',
-  primary3: '#9F669F',
-  primary4: '#834583',
-  primary5: '#6A216A',
-  success: '#005D7C',
-  danger: '#FF3B30',
-  warning: '#FFCC00',
-  discount: '#FF3B30',
+  primary: '#BE3730',
+  primary2: '#A32019',
+  primary3: '#8D1009',
+  primary4: '#730600',
+  primary5: '#5B0400',
+  success: '#3EB6AE',
+  danger: '#D6D454',
   background: {
     light: '#EEEEEE',
     dark: '#202020',
@@ -26,12 +24,6 @@ export const colors = {
     light: '#E5E5EA',
     dark: '#38383A',
   },
-  two: {
-    primary: '#D8A349',
-    border: '#000',
-    background: '#FBF3E4',
-    
-  }
 
 };
 

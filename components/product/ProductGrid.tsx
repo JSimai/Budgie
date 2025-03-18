@@ -2,6 +2,7 @@
  * ProductGrid Component
  * Displays a responsive grid of product cards with filtering, sorting, and search capabilities
  * Features pull-to-refresh, loading states, and error handling
+ * Includes smooth fade-in animations with staggered card effects
  */
 
 import React from 'react';
@@ -19,6 +20,7 @@ import { ProductCard } from './ProductCard';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 import { fetchProducts } from '@/app/store/slices/productsSlice';
 import { colors, spacing, typography } from '@/styles/theme';
+import { default as Anim, FadeInDown } from 'react-native-reanimated';
 
 /**
  * Product interface defining the shape of product data
@@ -58,15 +60,43 @@ export const ProductGrid: React.FC<ProductGridProps> = ({ onProductPress, bottom
   const dispatch = useAppDispatch();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const hasAnimatedRef = React.useRef(new Set<number>());
   
   // Get products state from Redux store
   const { items, status, error, filters } = useAppSelector((state) => state.products);
+
+  // Reset animation tracking when items array changes completely
+  React.useEffect(() => {
+    if (items.length === 0) {
+      hasAnimatedRef.current.clear();
+    }
+  }, [items.length === 0]);
+
+  /**
+   * Memoized render function for product items
+   * Only animates items that haven't been shown before
+   */
+  const renderItem = React.useCallback<ListRenderItem<Product>>(({ item, index }) => {
+    const shouldAnimate = !hasAnimatedRef.current.has(item.id);
+    if (shouldAnimate) {
+      hasAnimatedRef.current.add(item.id);
+    }
+
+    return (
+      <Anim.View 
+        entering={shouldAnimate ? FadeInDown.delay(index * 100).springify() : undefined}
+        style={styles.productContainer}>
+        <ProductCard {...item} onPress={() => onProductPress(item.id)} />
+      </Anim.View>
+    );
+  }, [onProductPress]);
 
   /**
    * Handle pull-to-refresh action
    * Dispatches action to fetch fresh products data
    */
   const handleRefresh = () => {
+    hasAnimatedRef.current.clear(); // Reset animations on refresh
     dispatch(fetchProducts());
   };
 
@@ -136,16 +166,6 @@ export const ProductGrid: React.FC<ProductGridProps> = ({ onProductPress, bottom
     );
   }
 
-  /**
-   * Render individual product card
-   * Wraps ProductCard with necessary container and press handler
-   */
-  const renderItem: ListRenderItem<Product> = ({ item }) => (
-    <View style={styles.productContainer}>
-      <ProductCard {...item} onPress={() => onProductPress(item.id)} />
-    </View>
-  );
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -165,7 +185,9 @@ export const ProductGrid: React.FC<ProductGridProps> = ({ onProductPress, bottom
           />
         }
         ListEmptyComponent={
-          <View style={styles.centered}>
+          <Anim.View 
+            entering={FadeInDown.springify()}
+            style={styles.centered}>
             <Text
               style={[
                 styles.emptyText,
@@ -175,7 +197,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({ onProductPress, bottom
                 ? 'No products match your search'
                 : 'No products found'}
             </Text>
-          </View>
+          </Anim.View>
         }
       />
     </View>
